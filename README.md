@@ -21,7 +21,4 @@
 
 ## 📦 Installation
 
-Include the JS file in your HTML:
-
-```html
-<script src="app.js"></script>
+Still WIP
