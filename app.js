@@ -70,7 +70,7 @@ function Example(id, title, liveDemo, stupidCode, vanillaCode, reactCode) {
 const nav = create("nav", {},
   create("div", { style: { display: "flex", alignItems: "center", gap: "10px", fontWeight: "bold", fontSize: "1.3em" } },
     create("img", {
-      src: "StupidJS.png",   // 👈 Replace with your actual logo file name or URL
+      src: "./StupidJS.png",   // 👈 Replace with your actual logo file name or URL
       alt: "Stupid.js Logo",
       style: { height: "32px", width: "32px", objectFit: "contain" }
     }),
@@ -360,3 +360,4 @@ const app = create(
 );
 
 document.getElementById("root").appendChild(app);
+
