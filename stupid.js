@@ -1,27 +1,29 @@
 function create(tag, props = {}, ...children) {
-  if (typeof tag === "function") {
-    return tag({ ...props, children: children.flat() });
-  }
-
   const el = document.createElement(tag);
 
   for (let key in props) {
-    if (key.startsWith("on") && typeof props[key] === "function") {
-      el.addEventListener(key.slice(2).toLowerCase(), props[key]);
-    } else if (key === "style" && typeof props[key] === "object") {
-      Object.assign(el.style, props[key]);
-    } else if (props[key] != null) {
-      el.setAttribute(key, props[key]);
+    const value = props[key];
+
+    if (key.startsWith("on") && typeof value === "function") {
+      el.addEventListener(key.slice(2).toLowerCase(), value);
+    } else if (key === "style" && typeof value === "object") {
+      Object.assign(el.style, value);
+    } else if (key === "class") {
+      el.className = value;
+    } else {
+      el.setAttribute(key, value);
     }
   }
 
-  for (const child of children.flat()) {
-    if (typeof child === "string" || typeof child === "number") {
-      el.appendChild(document.createTextNode(child));
-    } else if (child instanceof Node) {
-      el.appendChild(child);
-    }
-  }
+  children.flat().forEach(child => {
+    if (typeof child === "string") el.appendChild(document.createTextNode(child));
+    else if (child instanceof Node) el.appendChild(child);
+  });
 
   return el;
+}
+
+function mount(root, element) {
+  const container = typeof root === "string" ? document.querySelector(root) : root;
+  if (container) container.appendChild(element);
 }
