@@ -1,363 +1,290 @@
-// === Stupid.js Core ===
-function create(tag, props = {}, ...children) {
-  const el = document.createElement(tag);
-  for (let key in props) {
-    if (key.startsWith("on") && typeof props[key] === "function")
-      el.addEventListener(key.slice(2).toLowerCase(), props[key]);
-    else if (key === "style" && typeof props[key] === "object")
-      Object.assign(el.style, props[key]);
-    else if (props[key] != null)
-      el.setAttribute(key, props[key]);
-  }
-  for (const child of children.flat()) {
-    if (typeof child === "string" || typeof child === "number")
-      el.appendChild(document.createTextNode(child));
-    else if (child instanceof Node)
-      el.appendChild(child);
-  }
-  return el;
-}
+// === Stupid.js — The Dumbest Framework That Actually Works ===
 
-const theme = { primary: "#4a90e2", secondary: "#f5f5f5", accent: "#ff7f50", text: "#333" };
+function Header() {
+  const sizeEl = create("span", { class: "size-info" }, "Checking size...");
+  fetch("stupid.js")
+    .then(r => r.text())
+    .then(js => {
+      const kb = (js.length / 1024).toFixed(2);
+      sizeEl.textContent = `Framework Size: ${kb} KB`;
+    })
+    .catch(() => (sizeEl.textContent = "Framework Size: under 1 KB"));
 
-// === UI Helpers ===
-function Section(id, title, content) {
-  return create("section", { id },
-    create("h2", null, title),
-    typeof content === "string" ? create("p", null, content) : content
+  return create(
+    "header",
+    { class: "header" },
+    create("img", { src: "StupidJS.png", alt: "Stupid.js Logo", class: "logo" }),
+    create("h1", null, "Stupid.js — The Dumbest Framework That Actually Works"),
+    create(
+      "p",
+      { class: "subtitle" },
+      "A zero-dependency JavaScript micro-framework built by Fishy. Stupid.js focuses on simplicity, clarity, and learning — for both coders and non-coders."
+    ),
+    sizeEl
   );
 }
 
-function Button(text, onClick, styleClass = "btn-primary") {
-  return create("button", { class: styleClass, onClick }, text);
+function Navbar() {
+  const links = [
+    ["#intro", "Introduction"],
+    ["#why", "Why Stupid.js?"],
+    ["#getting-started", "Getting Started"],
+    ["#concepts", "Core Concepts"],
+    ["#api", "API Reference"],
+    ["#examples", "Examples"],
+    ["#credits", "Credits"]
+  ];
+  return create(
+    "nav",
+    { class: "navbar" },
+    links.map(([href, label]) => create("a", { href, class: "nav-link" }, label))
+  );
 }
 
-function CodeTabs(stupidCode, vanillaCode, reactCode) {
-  const tabContainer = create("div");
-  const btnStupid = Button("Stupid.js", () => switchTab("stupid"), "btn-tab active");
-  const btnVanilla = Button("Vanilla JS", () => switchTab("vanilla"), "btn-tab");
-  const btnReact = Button("React", () => switchTab("react"), "btn-tab");
-
-  const contentStupid = create("pre", { class: "code-tab-content active", id: "stupid" }, stupidCode);
-  const contentVanilla = create("pre", { class: "code-tab-content", id: "vanilla" }, vanillaCode);
-  const contentReact = create("pre", { class: "code-tab-content", id: "react" }, reactCode);
-
-  tabContainer.append(btnStupid, btnVanilla, btnReact, contentStupid, contentVanilla, contentReact);
-
-  function switchTab(tab) {
-    [btnStupid, btnVanilla, btnReact].forEach(b => b.classList.remove("active"));
-    [contentStupid, contentVanilla, contentReact].forEach(c => c.classList.remove("active"));
-    if (tab === "stupid") { btnStupid.classList.add("active"); contentStupid.classList.add("active"); }
-    else if (tab === "vanilla") { btnVanilla.classList.add("active"); contentVanilla.classList.add("active"); }
-    else { btnReact.classList.add("active"); contentReact.classList.add("active"); }
-  }
-
-  return tabContainer;
-}
-
-function Example(id, title, liveDemo, stupidCode, vanillaCode, reactCode) {
-  return Section(id, title, [
-    create("div", { class: "live-demo" },
-      create("p", null, "Live Demo:"),
-      liveDemo
+function Intro() {
+  return create(
+    "section",
+    { id: "intro" },
+    create("h2", null, "Introduction"),
+    create(
+      "p",
+      null,
+      "Stupid.js is a small JavaScript framework that helps you build websites without any setup, build tools, or complicated syntax. It’s designed to show how modern JavaScript can create and control HTML content directly in the browser."
     ),
-    create("p", null, "Code:"),
-    CodeTabs(stupidCode, vanillaCode, reactCode)
-  ]);
-}
-
-// === Navbar ===
-const nav = create("nav", {},
-  create("div", { style: { display: "flex", alignItems: "center", gap: "10px", fontWeight: "bold", fontSize: "1.3em" } },
-    create("img", {
-      src: "./StupidJS.png",   // 👈 Replace with your actual logo file name or URL
-      alt: "Stupid.js Logo",
-      style: { height: "32px", width: "32px", objectFit: "contain" }
-    }),
-    "Stupid.js"
-  ),
-  create("div", null,
-    [["Home", "welcome"], ["Docs", "docs-syntax"], ["Flow", "docs-flow"], ["Examples", "basic-example"], ["Compare", "comparison"]]
-      .map(([n, id]) => create("a", { href: "#" + id, class: "nav-link" }, n))
-  )
-);
-
-
-// === Hero Banner ===
-const hero = create(
-  "div", { class: "hero" },
-  create("div", { class: "hero-content" },
-    create("h1", null, "Stupid.js"),
-    create("p", null, "A ridiculously simple way to build DOM trees in JavaScript.")
-  )
-);
-
-// === Sections ===
-const welcome = Section("welcome", "Welcome to Stupid.js",
-  "Build DOM trees in JS easily, no JSX needed!"
-);
-
-const docsSyntax = Section(
-  "docs-syntax",
-  "Stupid.js Basic Syntax",
-  [
-    create("p", null, "The core of Stupid.js is the `create()` function."),
-    create("p", null, "Syntax:"),
-    create("pre", null,
-`create(tag, props = {}, ...children)
-- tag: string — HTML tag name, e.g., "div"
-- props: object — attributes, styles, event listeners
-- children: any — strings, numbers, or other DOM nodes`
-    ),
-    create("p", null, "Example:"),
-    CodeTabs(
-`const box = create("div", { style: { backgroundColor: "#f0f0f0" } }, "Hello World!", Button("Click Me"));`,
-`const box = document.createElement("div");
-box.style.backgroundColor = "#f0f0f0";
-box.textContent = "Hello World!";
-const btn = document.createElement("button");
-btn.textContent = "Click Me";
-btn.onclick = () => alert("Hello!");
-box.appendChild(btn);
-document.body.appendChild(box);`,
-`function App() {
-  return <div style={{backgroundColor:"#f0f0f0"}}>
-    Hello World!
-    <button onClick={()=>alert("Hello!")}>Click Me</button>
-  </div>;
-}`
+    create(
+      "p",
+      null,
+      "It is ideal for beginners who want to understand how web pages are built, and for developers who prefer simplicity. Everything on this page — including buttons, forms, and examples — is created entirely using Stupid.js itself."
     )
-  ]
-);
+  );
+}
 
-const docsFlow = Section(
-  "docs-flow",
-  "How `create()` Works",
-  [
-    create("p", null, "Step-by-step visual of how `create()` builds a DOM node:"),
-    create("div", {
-      style: {
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        marginTop: "20px"
-      }
-    },
-      create("div", { style: { padding: "10px 20px", backgroundColor: theme.primary, color: "white", borderRadius: "5px", marginBottom: "10px" } }, "create('div', {style:{color:'red'}}, 'Hello')"),
-      create("div", { style: { width: "2px", height: "20px", backgroundColor: "#333", marginBottom: "10px" } }),
-      create("div", { style: { display: "flex", gap: "20px", marginBottom: "10px" } },
-        create("div", { style: { padding: "10px", border: "1px solid #ccc", borderRadius: "5px" } }, "DOM Element <div>"),
-        create("div", { style: { padding: "10px", border: "1px solid #ccc", borderRadius: "5px" } }, "Props applied"),
-        create("div", { style: { padding: "10px", border: "1px solid #ccc", borderRadius: "5px" } }, "Child nodes added")
+function Why() {
+  return create(
+    "section",
+    { id: "why" },
+    create("h2", null, "Why Stupid.js Exists"),
+    create("p", null, "Most frameworks today are powerful but require complex setup steps — you need package managers, build tools, and large downloads just to start. Stupid.js is intentionally simple: it uses the language that browsers already understand — plain JavaScript."),
+    create("p", null, "It helps you focus on how the browser works under the hood. If you understand Stupid.js, you’ll understand how React, Vue, and other frameworks build user interfaces — but without all the extra layers.")
+  );
+}
+
+function GettingStarted() {
+  const code = `
+<!-- Step 1: Include Stupid.js -->
+<script src="stupid.js"></script>
+
+<!-- Step 2: Write your app -->
+<script>
+  const message = create("h1", null, "Hello, Stupid.js!");
+  mount("#root", message);
+</script>
+
+<!-- Step 3: Add a container -->
+<div id="root"></div>
+`;
+  return create(
+    "section",
+    { id: "getting-started" },
+    create("h2", null, "Getting Started"),
+    create("p", null, "You don’t need Node.js, React, or build tools to use Stupid.js. All you need is one small file and a browser."),
+    create("pre", { class: "code-block" }, code),
+    create("p", null, "When you load this page in your browser, it will create a heading that says “Hello, Stupid.js!” directly from JavaScript.")
+  );
+}
+
+function Concepts() {
+  return create(
+    "section",
+    { id: "concepts" },
+    create("h2", null, "Core Concepts"),
+    create("p", null, "Stupid.js has only two core ideas — 'create' and 'mount'. Understanding these gives you full control over building dynamic web content."),
+    create("h3", null, "1. create(tag, props, ...children)"),
+    create("p", null, "This function builds an element. You tell it what kind of element to make, what details or settings it should have, and what should go inside."),
+    create("pre", { class: "code-block" }, `
+const button = create("button", { onClick: () => alert("Hello!") }, "Click Me");
+`),
+    create("p", null, "Here, 'create' makes a button that says 'Click Me'. When the button is clicked, it runs a small function that shows an alert."),
+    create("h3", null, "2. mount(target, element)"),
+    create("p", null, "Once you’ve created something, you need to attach it to the page so people can see it. The 'mount' function takes a target — such as a CSS selector — and puts your element there."),
+    create("pre", { class: "code-block" }, `
+mount("#root", button);
+`),
+    create("p", null, "This tells Stupid.js to take the button you made and place it inside the element with id='root'. That’s how every part of this site is built.")
+  );
+}
+
+function APIReference() {
+  const table = create(
+    "table",
+    { class: "api-table" },
+    create(
+      "thead",
+      null,
+      create("tr", null,
+        create("th", null, "Property"),
+        create("th", null, "Type"),
+        create("th", null, "Description"),
+        create("th", null, "Example")
+      )
+    ),
+    create(
+      "tbody",
+      null,
+      create("tr", null,
+        create("td", null, "onClick"),
+        create("td", null, "Function"),
+        create("td", null, "Runs a function when clicked."),
+        create("td", null, `create("button", { onClick: () => alert("Clicked!") }, "Click")`)
       ),
-      create("div", { style: { width: "2px", height: "20px", backgroundColor: "#333", marginBottom: "10px" } }),
-      create("div", { style: { padding: "10px 20px", backgroundColor: theme.accent, color: "white", borderRadius: "5px" } }, "Returns fully constructed DOM node!")
+      create("tr", null,
+        create("td", null, "class"),
+        create("td", null, "String"),
+        create("td", null, "Applies a CSS class."),
+        create("td", null, `create("div", { class: "box" }, "Hello")`)
+      ),
+      create("tr", null,
+        create("td", null, "style"),
+        create("td", null, "Object"),
+        create("td", null, "Adds inline styling."),
+        create("td", null, `create("p", { style: { color: "red" } }, "Text")`)
+      ),
+      create("tr", null,
+        create("td", null, "children"),
+        create("td", null, "String or Node"),
+        create("td", null, "The content inside the element."),
+        create("td", null, `create("h1", null, "Heading")`)
+      )
     )
-  ]
+  );
+
+  return create(
+    "section",
+    { id: "api" },
+    create("h2", null, "API Reference"),
+    create("p", null, "The Stupid.js API is extremely small — intentionally. This makes it easy to remember and ideal for beginners."),
+    table,
+    create("h3", null, "Example: Combining Everything"),
+    create("pre", { class: "code-block" }, `
+const box = create("div", { class: "box", style: { padding: "10px", background: "#def" } },
+  create("h3", null, "My Box"),
+  create("p", null, "This text lives inside a box!")
 );
+mount("#app", box);
+`)
+  );
+}
 
-// === Examples ===
-const basicExample = Example(
-  "basic-example", "Basic Example",
-  create("div", null,
-    create("p", null, "Hello World!"),
-    Button("Click Me", () => alert("Hello!"))
-  ),
-  `const box=create("div",{},"Hello World!",Button("Click Me"));`,
-  `const box=document.createElement("div");
-box.textContent="Hello World!";
-const btn=document.createElement("button");
-btn.textContent="Click Me";
-btn.onclick=()=>alert("Hello!");
-box.appendChild(btn);
-document.body.appendChild(box);`,
-  `function App(){
-  return <div>Hello World!
-    <button onClick={()=>alert("Hello!")}>Click Me</button>
-  </div>;
-}`
-);
+function Examples() {
 
-const listExample = Example(
-  "list-example", "Dynamic List Example",
-  (() => {
-    const items = ["Apples", "Bananas", "Cherries"];
-    const ul = create("ul", {});
-    items.forEach(i => {
-      const li = create("li", null, i);
-      li.onclick = () => alert(i);
-      ul.appendChild(li);
-    });
-    return ul;
-  })(),
-  `const items=["Apples","Bananas","Cherries"];
-const list=create("ul",{},items.map(i=>create("li",null,i)));`,
-  `const items=["Apples","Bananas","Cherries"];
-const ul=document.createElement("ul");
-items.forEach(i=>{
-  const li=document.createElement("li");
-  li.textContent=i;
-  li.onclick=()=>alert(i);
-  ul.appendChild(li);
-});
-document.body.appendChild(ul);`,
-  `function List(){
-  const items=["Apples","Bananas","Cherries"];
-  return <ul>{items.map(i=>
-    <li key={i} onClick={()=>alert(i)}>{i}</li>
-  )}</ul>;
-}`
-);
+  const value = create("span", { class: "counter-value" }, "0");
+  const add = () => (value.textContent = parseInt(value.textContent) + 1);
+  const reset = () => (value.textContent = "0");
+  const counter = create("div", { class: "counter" },
+    value,
+    create("button", { onClick: add }, "Add"),
+    create("button", { onClick: reset }, "Reset")
+  );
 
-const counterExample = Example(
-  "counter-example", "Interactive Counter",
-  (() => {
-    let count = 0;
-    const countText = create("span", {}, count);
-    return create("div", null,
-      Button("Increment", () => { count++; countText.textContent = count; }),
-      create("p", null, "Count: ", countText)
-    );
-  })(),
-  `let count=0; const countText=create("span",{},count);
-Button("Increment",()=>{count++; countText.textContent=count;});`,
-  `let count=0;
-const span=document.createElement("span");
-span.textContent=count;
-const btn=document.createElement("button");
-btn.textContent="Increment";
-btn.onclick=()=>{count++; span.textContent=count;};`,
-  `function Counter(){
-  const [count,setCount]=React.useState(0);
-  return <div>
-    <button onClick={()=>setCount(count+1)}>Increment</button>
-    <p>Count: {count}</p>
-  </div>;
-}`
-);
-
-const nestedExample = Example(
-  "nested-example", "Nested Components",
-  create("div", null,
-    create("h3", null, "Card Title"),
-    create("p", null, "Nested paragraph."),
-    Button("Like", () => alert("Liked!"))
-  ),
-  `const card=create("div",{},
-  create("h3",null,"Card Title"),
-  create("p",null,"Nested paragraph."),
-  Button("Like"));`,
-  `const card=document.createElement("div");
-const h3=document.createElement("h3");
-h3.textContent="Card Title";
-const p=document.createElement("p");
-p.textContent="Nested paragraph";
-const btn=document.createElement("button");
-btn.textContent="Like";
-btn.onclick=()=>alert("Liked!");
-card.appendChild(h3);
-card.appendChild(p);
-card.appendChild(btn);
-document.body.appendChild(card);`,
-  `function Card(){
-  return <div>
-    <h3>Card Title</h3>
-    <p>Nested paragraph</p>
-    <button onClick={()=>alert("Liked!")}>Like</button>
-  </div>;
-}`
-);
-
-const formExample = Example(
-  "form-example", "Form Example",
-  (() => {
-    const input = create("input", { placeholder: "Type something" });
-    const btn = Button("Submit", () => alert(input.value));
-    return create("div", null, input, btn);
-  })(),
-  `const input=create("input",{placeholder:"Type"});
-const btn=Button("Submit",()=>alert(input.value));`,
-  `const input=document.createElement("input");
-input.placeholder="Type";
-const btn=document.createElement("button");
-btn.textContent="Submit";
-btn.onclick=()=>alert(input.value);
-document.body.appendChild(input);
-document.body.appendChild(btn);`,
-  `function Form(){
-  const [val,setVal]=React.useState("");
-  return <div>
-    <input value={val} onChange={e=>setVal(e.target.value)} />
-    <button onClick={()=>alert(val)}>Submit</button>
-  </div>;
-}`
-);
-
-const comparison = Section("comparison", "Why Stupid.js?", [
-  create("p", null, "Minimal code, easy to learn, perfect for small projects."),
-  create("table", null,
-    create("tr", null,
-      create("th", null, "Feature"),
-      create("th", null, "Stupid.js"),
-      create("th", null, "Vanilla JS"),
-      create("th", null, "React")
-    ),
-    create("tr", null, create("td", null, "Setup"), create("td", null, "1 <script> tag"), create("td", null, "Manual DOM"), create("td", null, "npm + build tools")),
-    create("tr", null, create("td", null, "Syntax"), create("td", null, "create(tag,props,...)"), create("td", null, "document.createElement + appendChild"), create("td", null, "JSX + Components")),
-    create("tr", null, create("td", null, "Bundle Size"), create("td", null, "~2KB"), create("td", null, "~0KB"), create("td", null, "~120KB+")),
-    create("tr", null, create("td", null, "Learning Curve"), create("td", null, "Almost none"), create("td", null, "Basic DOM knowledge"), create("td", null, "Steep")),
-    create("tr", null, create("td", null, "Best For"), create("td", null, "Quick prototypes & docs"), create("td", null, "Low-level DOM"), create("td", null, "Large-scale apps"))
-  )
-]);
-
-const footer = create("footer", null, "© 2025 Stupid.js — Minimal JS Framework");
-
-// === Floating Banner ===
-const stupidPercent = 99;
-const banner = create("div", { id: "banner" }, "This website was made 0% using Stupid.js");
-document.body.appendChild(banner);
-
-window.addEventListener("load", () => {
-  let count = 0;
-  const interval = setInterval(() => {
-    count++;
-    banner.textContent = `This website was made ${count}% using Stupid.js`;
-    if (count >= stupidPercent) {
-      clearInterval(interval);
-      setTimeout(() => {
-        banner.style.transition = "opacity 1s ease";
-        banner.style.opacity = "0";
-        setTimeout(() => banner.remove(), 1000);
-      }, 2000);
+  const themeBtn = create("button", {
+    onClick: () => {
+      document.body.classList.toggle("dark");
+      themeBtn.textContent = document.body.classList.contains("dark")
+        ? "Switch to Light Mode"
+        : "Switch to Dark Mode";
     }
-  }, 20);
+  }, "Switch to Dark Mode");
 
-  const sections = document.querySelectorAll("section");
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach(e => {
-      if (e.isIntersecting) e.target.classList.add("visible");
-    });
-  }, { threshold: 0.2 });
-  sections.forEach(s => observer.observe(s));
-});
+  const input = create("input", { placeholder: "Enter your name" });
+  const result = create("p", null, "");
+  const button = create("button", {
+    onClick: () => {
+      result.textContent = input.value
+        ? "Hello, " + input.value + "!"
+        : "Please enter your name.";
+    }
+  }, "Submit");
+  const form = create("div", null, input, button, result);
 
-// === App Root ===
+  const clock = create("p", { class: "clock" });
+  setInterval(() => (clock.textContent = new Date().toLocaleTimeString()), 1000);
+
+  return create(
+    "section",
+    { id: "examples" },
+    create("h2", null, "Examples"),
+    create("p", null, "Below are examples you can try. Each one demonstrates how you can make an interactive part of a webpage with Stupid.js."),
+
+    create("h3", null, "Counter"),
+    counter,
+    create("pre", { class: "code-block" }, `
+const value = create("span", null, "0");
+const add = () => value.textContent = parseInt(value.textContent) + 1;
+const reset = () => value.textContent = "0";
+mount("#app", create("div", null, value,
+  create("button", { onClick: add }, "Add"),
+  create("button", { onClick: reset }, "Reset")
+));`),
+
+    create("h3", null, "Theme Toggle"),
+    themeBtn,
+    create("pre", { class: "code-block" }, `
+const themeBtn = create("button", {
+  onClick: () => document.body.classList.toggle("dark")
+}, "Switch Theme");
+mount("#app", themeBtn);`),
+
+    create("h3", null, "Simple Form"),
+    form,
+    create("pre", { class: "code-block" }, `
+const input = create("input", { placeholder: "Enter your name" });
+const output = create("p");
+const button = create("button", {
+  onClick: () => output.textContent = input.value || "Please type your name."
+}, "Submit");
+mount("#app", create("div", null, input, button, output));`),
+
+    create("h3", null, "Live Clock"),
+    clock,
+    create("pre", { class: "code-block" }, `
+const clock = create("p");
+setInterval(() => clock.textContent = new Date().toLocaleTimeString(), 1000);
+mount("#app", clock);`)
+  );
+}
+
+function Credits() {
+  return create(
+    "section",
+    { id: "credits" },
+    create("h2", null, "Credits"),
+    create("p", null, "Stupid.js was created by Fishy."),
+    create("p", null, "The goal of this framework is to show that programming can be clear, fun, and understandable — even for people who have never written code before.")
+  );
+}
+
+function Footer() {
+  return create(
+    "footer",
+    { class: "footer" },
+    create("p", null, "Built with Stupid.js — a lightweight JavaScript framework for learning and creativity."),
+    create("p", null, "© " + new Date().getFullYear() + " Created by Fishy")
+  );
+}
+
 const app = create(
   "div",
-  null,
-  nav,
-  hero,
-  welcome,
-  docsSyntax,
-  docsFlow,
-  basicExample,
-  listExample,
-  counterExample,
-  nestedExample,
-  formExample,
-  comparison,
-  footer
+  { class: "container" },
+  Header(),
+  Navbar(),
+  Intro(),
+  Why(),
+  GettingStarted(),
+  Concepts(),
+  APIReference(),
+  Examples(),
+  Credits(),
+  Footer()
 );
 
-document.getElementById("root").appendChild(app);
-
+mount("#app", app);
